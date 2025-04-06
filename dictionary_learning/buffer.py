@@ -66,7 +66,7 @@ class ActivationBuffer:
         """
         with t.no_grad():
             # if buffer is less than half full, refresh
-            if (~self.read).sum() < self.activation_buffer_size // 2:
+            if ((~self.read).sum() < self.activation_buffer_size // 2): # JP
                 self.refresh()
 
             # return a batch
@@ -104,9 +104,17 @@ class ActivationBuffer:
     def refresh(self):
         gc.collect()
         t.cuda.empty_cache()
+        
+        #print("Shape of self.activations:", self.activations.shape) # JP
+        #print("Shape of self.read:", self.read.shape)
+        #print("Shape of ~self.read:", (~self.read).shape)
+        #print("Sum of ~self.read (number of False elements):", (~self.read).sum())
+        self.read = t.zeros(self.activations.shape[0], dtype=t.bool, device=self.activations.device)
         self.activations = self.activations[~self.read]
 
         current_idx = len(self.activations)
+        #print("self.activation_buffer_size: ", self.activation_buffer_size) # JP
+        self.activation_buffer_size = int(self.activation_buffer_size) # JP
         new_activations = t.empty(self.activation_buffer_size, self.d_submodule, device=self.device, dtype=self.model.dtype)
 
         new_activations[: len(self.activations)] = self.activations

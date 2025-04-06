@@ -18,6 +18,8 @@ from .dictionary import AutoEncoder
 from .evaluation import evaluate
 from .trainers.standard import StandardTrainer
 
+import time
+
 
 def new_wandb_process(config, log_queue, entity, project):
     wandb.init(entity=entity, project=project, config=config, name=config["wandb_name"])
@@ -144,6 +146,7 @@ def trainSAE(
     for i, config in enumerate(trainer_configs):
         if "wandb_name" in config:
             config["wandb_name"] = f"{config['wandb_name']}_trainer_{i}"
+        #print(config)
         trainer_class = config["trainer"]
         del config["trainer"]
         trainers.append(trainer_class(**config))
@@ -194,7 +197,11 @@ def trainSAE(
             trainer.config["norm_factor"] = norm_factor
             # Verify that all autoencoders have a scale_biases method
             trainer.ae.scale_biases(1.0)
-
+    
+    #print("DATA: ", data)
+    #print("STEPS/TOTAL: ", steps)
+    #print(tqdm(data, total=steps))
+    
     for step, act in enumerate(tqdm(data, total=steps)):
 
         act = act.to(dtype=autocast_dtype)
@@ -243,7 +250,8 @@ def trainSAE(
             trainer.ae.scale_biases(norm_factor)
         if save_dir is not None:
             final = {k: v.cpu() for k, v in trainer.ae.state_dict().items()}
-            t.save(final, os.path.join(save_dir, "ae.pt"))
+            timestr = time.strftime("%d%m%Y-%H%M")
+            t.save(final, os.path.join(save_dir, f"ae_{timestr}.pt"))
 
     # Signal wandb processes to finish
     if use_wandb:

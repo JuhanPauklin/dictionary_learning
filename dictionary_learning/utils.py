@@ -5,6 +5,8 @@ import json
 import os
 from nnsight import LanguageModel
 
+import pandas as pd
+
 from .trainers.top_k import AutoEncoderTopK
 from .trainers.batch_top_k import BatchTopKSAE
 from .trainers.matryoshka_batch_top_k import MatryoshkaBatchTopKSAE
@@ -98,3 +100,10 @@ def get_submodule(model: LanguageModel, layer: int):
         return model.model.layers[layer]
     else:
         raise ValueError(f"Please add submodule for model {model_name}")
+        
+def read_csv(file_path, amount=-1):
+    # 100k_synthetic_texts.csv veerud = id,table,pat_age,pat_sex,main_diag_category,text
+    df = pd.read_csv(file_path, usecols=['text'])
+    if amount != -1:
+        df = df[:amount]
+    return iter(df['text'].dropna()) 
