@@ -198,10 +198,6 @@ def trainSAE(
             # Verify that all autoencoders have a scale_biases method
             trainer.ae.scale_biases(1.0)
     
-    #print("DATA: ", data)
-    #print("STEPS/TOTAL: ", steps)
-    #print(tqdm(data, total=steps))
-    
     for step, act in enumerate(tqdm(data, total=steps)):
 
         act = act.to(dtype=autocast_dtype)
@@ -250,7 +246,6 @@ def trainSAE(
             trainer.ae.scale_biases(norm_factor)
         if save_dir is not None:
             final = {k: v.cpu() for k, v in trainer.ae.state_dict().items()}
-            timestr = time.strftime("%d%m%Y-%H%M")
             t.save(final, os.path.join(save_dir, f"ae_{timestr}.pt"))
 
     # Signal wandb processes to finish
