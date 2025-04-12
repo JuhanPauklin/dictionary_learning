@@ -138,6 +138,10 @@ def trainSAE(
 
     Setting autocast_dtype to t.bfloat16 provides a significant speedup with minimal change in performance.
     """
+    
+    named_tuple = time.localtime()
+    time_string = time.strftime("%d%m%, named_tuple)
+    print(time_string)
 
     device_type = "cuda" if "cuda" in device else "cpu"
     autocast_context = nullcontext() if device_type == "cpu" else t.autocast(device_type=device_type, dtype=autocast_dtype)
@@ -246,7 +250,7 @@ def trainSAE(
             trainer.ae.scale_biases(norm_factor)
         if save_dir is not None:
             final = {k: v.cpu() for k, v in trainer.ae.state_dict().items()}
-            t.save(final, os.path.join(save_dir, f"ae_{timestr}.pt"))
+            t.save(final, os.path.join(save_dir, f"ae_{time_string}.pt"))
 
     # Signal wandb processes to finish
     if use_wandb:
