@@ -10,31 +10,52 @@ class SparseFeatureWriter:
         if not os.path.exists(path):
             with h5py.File(path, 'w') as f:
                 f.create_dataset('data', shape=(0,), maxshape=(None,), dtype='float32')
-                f.create_dataset('indices', shape=(0,), maxshape=(None,), dtype='int32')
-                f.create_dataset('indptr', shape=(1,), maxshape=(None,), dtype='int32')  # starts at 0
+                f.create_dataset('indices', shape=(0,), maxshape=(None,), dtype='int32') # column indices = feature idx
+                f.create_dataset('indptr', shape=(1,), maxshape=(None,), dtype='int32')  # row pointers. starts at 0
+                f.create_dataset('tokens', shape=(0,), maxshape=(None,), dtype='int32')
                 f.attrs['shape'] = (-1, -1)  # updated later
+        else:
+            userInput = input("h5 file already exists. Clear current data? (y/n) ")
+            while userInput != "y" and userInput != "n":
+                userInput = input("h5 file already exists. Clear current data? (y/n) ")
+            if userInput == "y":
+                with h5py.File(path, 'w') as f:
+                    f.create_dataset('data', shape=(0,), maxshape=(None,), dtype='float32')
+                    f.create_dataset('indices', shape=(0,), maxshape=(None,), dtype='int32') 
+                    f.create_dataset('indptr', shape=(1,), maxshape=(None,), dtype='int32')
+                    f.create_dataset('tokens', shape=(0,), maxshape=(None,), dtype='int32')
+                    f.attrs['shape'] = (-1, -1)
+            else:
+                print("data will be appended to previous data.")
 
-    def append(self, sparse_batch: csr_matrix):
+    def append(self, sparse_batch: csr_matrix, token_batch: list[int]):
         with h5py.File(self.path, 'a') as f:
+            batch_tokens = [tok for tok in token_batch]  # flatten tokens
+
+            # Flatten CSR matrix to match tokens
             n_rows, n_cols = sparse_batch.shape
-            if f.attrs['shape'][1] == -1:
-                f.attrs['shape'] = (0, n_cols)
+            assert len(batch_tokens) == n_rows, "Token count must match number of rows"
 
-            # Current shape info
+            # Current size
             curr_data = f['data'].shape[0]
-            curr_indptr = f['indptr'].shape[0] - 1  # indptr always has one more element
+            curr_indptr = f['indptr'].shape[0] - 1
+            curr_tokens = f['tokens'].shape[0]
 
-            # Resize datasets
+            # Resize
             f['data'].resize((curr_data + sparse_batch.data.shape[0],))
             f['indices'].resize((curr_data + sparse_batch.indices.shape[0],))
             f['indptr'].resize((curr_indptr + sparse_batch.indptr.shape[0],))
+            f['tokens'].resize((curr_tokens + n_rows,))
 
-            # Append data
+            # Write data
             f['data'][curr_data:] = sparse_batch.data
             f['indices'][curr_data:] = sparse_batch.indices
             f['indptr'][curr_indptr + 1:] = sparse_batch.indptr[1:] + f['indptr'][curr_indptr]
+            f['tokens'][curr_tokens:] = batch_tokens
 
-            # Update shape metadata
+            # Update shape attribute
+            if f.attrs['shape'][1] == -1:
+                f.attrs['shape'] = (0, n_cols)
             f.attrs['shape'] = (
                 f.attrs['shape'][0] + n_rows,
                 f.attrs['shape'][1]
