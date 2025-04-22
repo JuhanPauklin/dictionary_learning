@@ -3,16 +3,23 @@ from scipy.sparse import csr_matrix, vstack
 import numpy as np
 import os
 
+# Uses Hierarchical Data Format version 5 (HDF5) to
+# store the Compressed Sparse Row matrix (CSR) matrix in parts
 class SparseFeatureWriter:
     def __init__(self, path):
         self.path = path
         self.total_rows = 0
         if not os.path.exists(path):
             with h5py.File(path, 'w') as f:
+                # CSR matrix
                 f.create_dataset('data', shape=(0,), maxshape=(None,), dtype='float32')
                 f.create_dataset('indices', shape=(0,), maxshape=(None,), dtype='int32') # column indices = feature idx
                 f.create_dataset('indptr', shape=(1,), maxshape=(None,), dtype='int32')  # row pointers. starts at 0
+                
+                # Tokens
                 f.create_dataset('tokens', shape=(0,), maxshape=(None,), dtype='int32')
+                
+                #Metadata
                 f.attrs['shape'] = (-1, -1)  # updated later
         else:
             userInput = input("h5 file already exists. Clear current data? (y/n) ")
