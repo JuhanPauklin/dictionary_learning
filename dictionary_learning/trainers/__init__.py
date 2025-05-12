@@ -1,4 +1,4 @@
-from .standard import StandardTrainer
+from .standard import StandardTrainer, StandardTrainerAprilUpdate
 from .gdm import GatedSAETrainer
 from .p_anneal import PAnnealTrainer
 from .gated_anneal import GatedAnnealTrainer
@@ -16,4 +16,5 @@ __all__ = [
     "JumpReluTrainer",
     "BatchTopKTrainer",
     "BatchTopKSAE",
+    "StandardTrainerAprilUpdate",
 ]

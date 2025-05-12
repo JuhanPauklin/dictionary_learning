@@ -22,18 +22,8 @@ class SparseFeatureWriter:
                 #Metadata
                 f.attrs['shape'] = (-1, -1)  # updated later
         else:
-            userInput = input("h5 file already exists. Clear current data? (y/n) ")
-            while userInput != "y" and userInput != "n":
-                userInput = input("h5 file already exists. Clear current data? (y/n) ")
-            if userInput == "y":
-                with h5py.File(path, 'w') as f:
-                    f.create_dataset('data', shape=(0,), maxshape=(None,), dtype='float32')
-                    f.create_dataset('indices', shape=(0,), maxshape=(None,), dtype='int32') 
-                    f.create_dataset('indptr', shape=(1,), maxshape=(None,), dtype='int32')
-                    f.create_dataset('tokens', shape=(0,), maxshape=(None,), dtype='int32')
-                    f.attrs['shape'] = (-1, -1)
-            else:
-                print("data will be appended to previous data.")
+            print("h5 file already exists. New data will be appended to previous data.")
+
 
     def append(self, sparse_batch: csr_matrix, token_batch: list[int]):
         with h5py.File(self.path, 'a') as f:

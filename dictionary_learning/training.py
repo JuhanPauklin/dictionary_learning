@@ -140,7 +140,7 @@ def trainSAE(
     """
     
     named_tuple = time.localtime()
-    time_string = time.strftime("%d%m%", named_tuple)
+    time_string = time.strftime("%d%m", named_tuple)
     print(time_string)
 
     device_type = "cuda" if "cuda" in device else "cpu"

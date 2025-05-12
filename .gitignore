@@ -164,3 +164,8 @@ experiment*
 run_experiment.sh
 nohup.out
 *.zip
+
+
+# trained SAEs and their extracted features
+saes/
+features/

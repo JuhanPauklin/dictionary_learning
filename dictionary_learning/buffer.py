@@ -66,7 +66,7 @@ class ActivationBuffer:
         """
         with t.no_grad():
             # if buffer is less than half full, refresh
-            if ((~self.read).sum() < self.activation_buffer_size // 2): # JP
+            if ((~self.read).sum() < self.activation_buffer_size // 2):
                 self.refresh()
 
             # return a batch
