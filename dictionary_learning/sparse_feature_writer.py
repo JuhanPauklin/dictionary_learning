@@ -6,7 +6,7 @@ import os
 # Uses Hierarchical Data Format version 5 (HDF5) to
 # store the Compressed Sparse Row matrix (CSR) matrix in parts
 class SparseFeatureWriter:
-    def __init__(self, path):
+    def __init__(self, path, batch_length):
         self.path = path
         self.total_rows = 0
         if not os.path.exists(path):
@@ -21,6 +21,7 @@ class SparseFeatureWriter:
                 
                 #Metadata
                 f.attrs['shape'] = (-1, -1)  # updated later
+                f.attrs['batch_len'] = batch_length
         else:
             print("h5 file already exists. New data will be appended to previous data.")
 
@@ -57,3 +58,38 @@ class SparseFeatureWriter:
                 f.attrs['shape'][0] + n_rows,
                 f.attrs['shape'][1]
             )
+            
+    def remove_from_index(self, keep_rows):
+        # keep_rows (int): Number of rows to keep (tokens/features). All rows beyond this will be removed.
+       
+        with h5py.File(self.path, 'a') as f:
+            shape = f.attrs['shape']
+            total_rows, num_features = shape
+
+            assert keep_rows <= total_rows, f"keep_rows ({keep_rows}) must be <= total_rows ({total_rows})"
+
+            # Trim tokens
+            f['tokens'].resize((keep_rows,))
+
+            # Trim CSR arrays
+            old_indptr = f['indptr'][:]
+            new_indptr = old_indptr[:keep_rows + 1]
+
+            start_data = new_indptr[0]
+            end_data = new_indptr[-1]
+
+            f['data'].resize((end_data,))
+            f['indices'].resize((end_data,))
+            f['indptr'].resize((keep_rows + 1,))
+
+            f['indptr'][:] = new_indptr
+
+            # Update shape metadata
+            f.attrs['shape'] = (keep_rows, num_features)
+
+        print(f" Truncated HDF5 file to {keep_rows} rows.")
+
+    def get_batch_length(self):
+        with h5py.File(self.path, 'a') as f:
+            batch_length = f.attrs['batch_len']
+        return batch_length
