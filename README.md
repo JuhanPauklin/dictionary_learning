@@ -4,4 +4,6 @@ The files of the original dictionary_learning repository were modified (permitte
 
 As part of the thesis sparse autoencoders (SAE) were trained on the GPT-2 based model of the University of Tartu's Research Group of Health Informatics. Four jupyter notebook files were respectively used to train the SAEs, evaluate them, "run" SAEs and perform dictionary learning, capturing the features of the language model and then analyse the extracted features.
 
-The extracted feature activations (in the form of .h5 files) are not included in the repository as the size of one file is measured in dozens of gigabytes.
+The extracted feature activations (in the form of .h5 files) are not included in the repository due to their size. The features are accessable in from google drive [here](https://drive.google.com/drive/folders/10mWju_QcBR2kpFkSYKCTJCbQABEZOu0F?usp=sharing).
+
+There was an issue pushin the trained autoencoders to the repository, so they as well are available [here](https://drive.google.com/drive/folders/1ELdcOTSb6E8Xnl9TWg-VUDp-Zbodbn4M?usp=sharing). 
